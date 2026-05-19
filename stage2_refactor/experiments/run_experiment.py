@@ -105,6 +105,8 @@ def evaluate_test(
 def run(args: argparse.Namespace) -> dict[str, Any]:
     root = Path(args.project_root).resolve() if args.project_root else repo_root_from_script()
     config = load_config(path_from_root(root, args.config))
+    if args.apply_median_filter_to_test is not None:
+        config["preprocessing"]["apply_median_filter_to_test"] = args.apply_median_filter_to_test
     subset = args.subset.upper()
     dataset_cfg = dict(config["datasets"][subset])
     model_cfg, training_cfg = merged_model_training_cfg(config, dataset_cfg)
@@ -283,6 +285,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-epochs", type=int, default=None)
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--use-wandb", action="store_true")
+    parser.add_argument(
+        "--apply-median-filter-to-test",
+        dest="apply_median_filter_to_test",
+        action="store_true",
+        default=None,
+    )
+    parser.add_argument(
+        "--no-apply-median-filter-to-test",
+        dest="apply_median_filter_to_test",
+        action="store_false",
+    )
     return parser.parse_args()
 
 
