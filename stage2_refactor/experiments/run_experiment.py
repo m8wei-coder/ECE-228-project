@@ -101,8 +101,17 @@ def build_model(input_size: int, model_cfg: dict[str, Any]) -> torch.nn.Module:
     )
 
 
-def merged_model_training_cfg(config: dict[str, Any], dataset_cfg: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
-    model_cfg = dict(config["model"])
+def merged_model_training_cfg(
+    config: dict[str, Any],
+    dataset_cfg: dict[str, Any],
+    selected_model_name: str,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    if "models" in config and selected_model_name in config["models"]:
+        model_cfg = dict(config["models"][selected_model_name])
+    else:
+        model_cfg = dict(config["model"])
+        model_cfg["name"] = selected_model_name
+
     training_cfg = dict(config["training"])
     for key in ["hidden_size", "num_layers", "dropout"]:
         if key in dataset_cfg:
@@ -138,9 +147,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         config["preprocessing"]["apply_median_filter_to_test"] = args.apply_median_filter_to_test
     subset = args.subset.upper()
     dataset_cfg = dict(config["datasets"][subset])
-    model_cfg, training_cfg = merged_model_training_cfg(config, dataset_cfg)
-    if args.model is not None:
-        model_cfg["name"] = args.model
+    selected_model_name = args.model or config.get("model", {}).get("name", "lstm")
+    model_cfg, training_cfg = merged_model_training_cfg(config, dataset_cfg, selected_model_name)
 
     if args.max_epochs is not None:
         training_cfg["epochs"] = args.max_epochs

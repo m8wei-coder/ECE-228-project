@@ -87,6 +87,17 @@ The core Stage 2.1 recurrent backbones are implemented:
 - `bilstm`
 - `bigru`
 
+Their default backbone hyperparameters live in
+`configs/lstm_baseline.yaml` under the `models` key. They intentionally start
+from the same values as the LSTM baseline so the first comparison changes only
+the recurrent backbone:
+
+```text
+hidden_size = 60
+num_layers = 4
+dropout = 0.1
+```
+
 Run one model by changing only `--model`:
 
 ```bash

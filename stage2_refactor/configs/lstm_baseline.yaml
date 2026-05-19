@@ -6,6 +6,38 @@
     "num_layers": 4,
     "dropout": 0.1
   },
+  "models": {
+    "lstm": {
+      "name": "lstm",
+      "hidden_size": 60,
+      "num_layers": 4,
+      "dropout": 0.1
+    },
+    "gru": {
+      "name": "gru",
+      "hidden_size": 60,
+      "num_layers": 4,
+      "dropout": 0.1
+    },
+    "bilstm": {
+      "name": "bilstm",
+      "hidden_size": 60,
+      "num_layers": 4,
+      "dropout": 0.1
+    },
+    "bigru": {
+      "name": "bigru",
+      "hidden_size": 60,
+      "num_layers": 4,
+      "dropout": 0.1
+    }
+  },
+  "hyperparameter_grid": {
+    "hidden_size": [32, 64, 96, 128],
+    "num_layers": [2, 3, 4],
+    "dropout": [0.1, 0.2, 0.3],
+    "learning_rate": [0.001, 0.0005, 0.0001]
+  },
   "training": {
     "seed": 42,
     "batch_size": 15,
@@ -97,4 +129,3 @@
     }
   }
 }
-
