@@ -48,6 +48,8 @@ From the repo root:
 pip install -r stage2_refactor/requirements.txt
 python -m stage2_refactor.experiments.run_experiment \
   --subset FD001 \
+  --model lstm \
+  --run-id baseline_seed42 \
   --mode train_eval
 ```
 
@@ -56,11 +58,53 @@ Use a Drive-backed checkpoint directory in Colab:
 ```bash
 python -m stage2_refactor.experiments.run_experiment \
   --subset FD001 \
+  --model lstm \
+  --run-id baseline_seed42 \
   --mode train_eval \
   --checkpoint-dir /content/drive/MyDrive/ece228_stage2/checkpoints \
   --output-dir /content/drive/MyDrive/ece228_stage2/outputs \
   --resume
 ```
+
+Outputs are written under model-specific directories, for example:
+
+```text
+/content/drive/MyDrive/ece228_stage2/outputs/lstm/FD001/baseline_seed42/summary.json
+```
+
+If `--run-id` is omitted, the CLI creates one from the main hyperparameters:
+
+```text
+seed42_h60_l4_d0p1_lr0p002_bs15
+```
+
+## Stage 2.1 Backbones
+
+The core Stage 2.1 recurrent backbones are implemented:
+
+- `lstm`
+- `gru`
+- `bilstm`
+- `bigru`
+
+Run one model by changing only `--model`:
+
+```bash
+python -m stage2_refactor.experiments.run_experiment \
+  --subset FD001 \
+  --model gru \
+  --run-id gru_seed42_h60_l4 \
+  --mode train_eval \
+  --checkpoint-dir /content/drive/MyDrive/ece228_stage2/checkpoints \
+  --output-dir /content/drive/MyDrive/ece228_stage2/outputs \
+  --resume
+```
+
+The preprocessing, data interface, metrics, checkpointing, and training loop
+stay shared across backbones.
+
+For grid search or multi-seed runs, use a unique `--run-id` for each
+configuration so results and checkpoints are not overwritten.
 
 ## Local Smoke Checks
 
@@ -71,4 +115,3 @@ the included smoke check avoids third-party imports:
 python3 stage2_refactor/tools/smoke_read_data.py --data-dir CMaps
 python3 -m py_compile $(find stage2_refactor -name '*.py')
 ```
-

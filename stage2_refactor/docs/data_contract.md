@@ -126,3 +126,25 @@ model by training loss. The refactor therefore defaults to:
 An engine-level validation split is implemented but disabled by default. When
 enabled later, engines are split by `unit_number`, not by sample window.
 
+## Baseline Verification Note
+
+The prompt listed the Stage 1 FD001 target as RMSE approximately `7.78`.
+During Stage 2.0 verification, the checked-in Stage 1 artifacts did not
+reproduce that number:
+
+- Original `reproduce/logs.tar` FD001 checkpoint evaluated with original
+  `reproduce/main_test.py`: `Test RMSE = 8.72`.
+- Same original checkpoint and preprocessing artifact evaluated through the
+  refactored eval path:
+  - test median filter disabled: `test_rmse = 8.7202`.
+  - test median filter enabled: `test_rmse = 8.2788`.
+- Refactored FD001 training run in Colab from scratch:
+  - `test_rmse = 8.2575`.
+  - `test_score = 105.8406`.
+  - `initial_rul = 81`.
+  - `test_windows_shape = [100, 30, 14]`.
+
+Conclusion: the current repository artifacts and original Stage 1 evaluation
+script verify an FD001 baseline around `8.72` for the saved checkpoint, not
+`7.78`. The refactored pipeline is consistent with the checked-in Stage 1
+behavior and produced a better FD001 run (`8.26`) when retrained in Colab.

@@ -22,6 +22,9 @@ from stage2_refactor.data.preprocessing import (
     load_preprocessing_artifact,
     transform_with_artifact,
 )
+from stage2_refactor.models.bigru import BiGRUBaseline
+from stage2_refactor.models.bilstm import BiLSTMBaseline
+from stage2_refactor.models.gru import GRUBaseline
 from stage2_refactor.models.lstm import LSTMBaseline
 from stage2_refactor.training.evaluator import count_parameters, rmse_score
 from stage2_refactor.training.logging import CSVLogger, WandbLogger
@@ -49,6 +52,24 @@ def path_from_root(root: Path, path: str | Path) -> Path:
     return root / candidate
 
 
+def format_run_value(value: Any) -> str:
+    text = str(value)
+    return text.replace("-", "m").replace(".", "p").replace("/", "_")
+
+
+def build_run_id(model_cfg: dict[str, Any], training_cfg: dict[str, Any]) -> str:
+    return "_".join(
+        [
+            f"seed{format_run_value(training_cfg['seed'])}",
+            f"h{format_run_value(model_cfg['hidden_size'])}",
+            f"l{format_run_value(model_cfg['num_layers'])}",
+            f"d{format_run_value(model_cfg['dropout'])}",
+            f"lr{format_run_value(training_cfg['learning_rate'])}",
+            f"bs{format_run_value(training_cfg['batch_size'])}",
+        ]
+    )
+
+
 def git_commit_hash(root: Path) -> str:
     try:
         return subprocess.check_output(
@@ -61,10 +82,18 @@ def git_commit_hash(root: Path) -> str:
         return "unknown"
 
 
-def build_model(input_size: int, model_cfg: dict[str, Any]) -> LSTMBaseline:
-    if model_cfg.get("name", "lstm") != "lstm":
-        raise ValueError("Stage 2.0 only supports the LSTM baseline.")
-    return LSTMBaseline(
+def build_model(input_size: int, model_cfg: dict[str, Any]) -> torch.nn.Module:
+    model_name = model_cfg.get("name", "lstm")
+    model_classes = {
+        "lstm": LSTMBaseline,
+        "gru": GRUBaseline,
+        "bilstm": BiLSTMBaseline,
+        "bigru": BiGRUBaseline,
+    }
+    if model_name not in model_classes:
+        raise ValueError(f"Unknown model {model_name}. Choose from {sorted(model_classes)}.")
+
+    return model_classes[model_name](
         input_size=input_size,
         hidden_size=int(model_cfg["hidden_size"]),
         num_layers=int(model_cfg["num_layers"]),
@@ -110,14 +139,18 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     subset = args.subset.upper()
     dataset_cfg = dict(config["datasets"][subset])
     model_cfg, training_cfg = merged_model_training_cfg(config, dataset_cfg)
+    if args.model is not None:
+        model_cfg["name"] = args.model
 
     if args.max_epochs is not None:
         training_cfg["epochs"] = args.max_epochs
     if args.seed is not None:
         training_cfg["seed"] = args.seed
 
-    output_dir = path_from_root(root, args.output_dir or config["paths"]["output_dir"]) / subset
-    checkpoint_dir = path_from_root(root, args.checkpoint_dir or config["paths"]["checkpoint_dir"]) / subset
+    model_name = model_cfg["name"]
+    run_id = args.run_id or build_run_id(model_cfg, training_cfg)
+    output_dir = path_from_root(root, args.output_dir or config["paths"]["output_dir"]) / model_name / subset / run_id
+    checkpoint_dir = path_from_root(root, args.checkpoint_dir or config["paths"]["checkpoint_dir"]) / model_name / subset / run_id
     output_dir.mkdir(parents=True, exist_ok=True)
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
@@ -127,7 +160,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         if args.preprocessing_artifact_path
         else None
     )
-    best_model_path = checkpoint_dir / f"{subset.lower()}_lstm_best.pth"
+    best_model_path = checkpoint_dir / f"{subset.lower()}_{model_name}_best.pth"
     last_checkpoint_path = checkpoint_dir / f"{subset.lower()}_last_checkpoint.pt"
     best_checkpoint_path = checkpoint_dir / f"{subset.lower()}_best_checkpoint.pt"
     log_path = output_dir / "train_log.csv"
@@ -153,39 +186,36 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         rul_patience=int(dataset_cfg["rul_patience"]),
     )
 
-    if args.mode == "eval" and external_artifact_path is not None:
-        artifact = load_preprocessing_artifact(external_artifact_path)
-        df_train_raw = read_cmapss_table(train_file)
-        df_train, _ = fit_transform_train(df_train_raw, params, artifact_path=None)
+    train_loader = None
+    val_loader = None
+    split = None
+
+    if args.mode == "eval":
+        artifact = load_preprocessing_artifact(external_artifact_path or scaler_path)
     else:
         df_train_raw = read_cmapss_table(train_file)
         df_train, artifact = fit_transform_train(df_train_raw, params, scaler_path)
+        train_loader, val_loader, split = build_train_val_loaders(
+            df=df_train,
+            features=artifact["features"],
+            sequence_length=int(preprocessing_cfg["sequence_length"]),
+            batch_size=int(training_cfg["batch_size"]),
+            shuffle=bool(training_cfg["shuffle"]),
+            drop_last=bool(training_cfg["drop_last"]),
+            validation_enabled=bool(config["validation"]["enabled"]),
+            validation_fraction=float(config["validation"]["fraction"]),
+            seed=seed,
+        )
     features = artifact["features"]
     initial_rul = int(artifact["initial_rul"])
     input_size = len(features)
 
-    train_loader, val_loader, split = build_train_val_loaders(
-        df=df_train,
-        features=features,
-        sequence_length=int(preprocessing_cfg["sequence_length"]),
-        batch_size=int(training_cfg["batch_size"]),
-        shuffle=bool(training_cfg["shuffle"]),
-        drop_last=bool(training_cfg["drop_last"]),
-        validation_enabled=bool(config["validation"]["enabled"]),
-        validation_fraction=float(config["validation"]["fraction"]),
-        seed=seed,
-    )
-
     model = build_model(input_size, model_cfg).to(device)
-    optimizer = torch.optim.Adam(
-        model.parameters(),
-        lr=float(training_cfg["learning_rate"]),
-        weight_decay=float(training_cfg["weight_decay"]),
-    )
     criterion = nn.MSELoss()
     metadata = {
         "subset": subset,
         "model": model_cfg["name"],
+        "run_id": run_id,
         "seed": seed,
         "git_commit": git_commit_hash(root),
         "input_size": input_size,
@@ -198,15 +228,24 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     result: dict[str, Any] = {
         **metadata,
-        "train_sequences": len(train_loader.dataset),
+        "train_sequences": len(train_loader.dataset) if train_loader is not None else None,
         "val_sequences": len(val_loader.dataset) if val_loader is not None else 0,
-        "train_engine_ids": split.train_engine_ids,
-        "val_engine_ids": split.val_engine_ids,
+        "train_engine_ids": split.train_engine_ids if split is not None else [],
+        "val_engine_ids": split.val_engine_ids if split is not None else [],
         "best_model_path": str(best_model_path),
-        "preprocessing_artifact_path": str(scaler_path),
+        "preprocessing_artifact_path": str(external_artifact_path or scaler_path),
+        "output_dir": str(output_dir),
+        "checkpoint_dir": str(checkpoint_dir),
     }
 
     if args.mode in {"train", "train_eval"}:
+        if train_loader is None:
+            raise RuntimeError("train_loader was not initialized for training mode.")
+        optimizer = torch.optim.Adam(
+            model.parameters(),
+            lr=float(training_cfg["learning_rate"]),
+            weight_decay=float(training_cfg["weight_decay"]),
+        )
         csv_logger = CSVLogger(log_path)
         wandb_logger = WandbLogger(
             enabled=bool(args.use_wandb),
@@ -281,6 +320,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--checkpoint-dir", default=None)
     parser.add_argument("--model-path", default=None)
     parser.add_argument("--preprocessing-artifact-path", default=None)
+    parser.add_argument("--model", choices=["lstm", "gru", "bilstm", "bigru"], default=None)
+    parser.add_argument("--run-id", default=None)
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--max-epochs", type=int, default=None)
     parser.add_argument("--resume", action="store_true")
