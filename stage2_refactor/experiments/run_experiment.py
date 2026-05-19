@@ -120,6 +120,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
     scaler_path = checkpoint_dir / f"{subset.lower()}_preprocessing.gz"
+    external_artifact_path = (
+        path_from_root(root, args.preprocessing_artifact_path)
+        if args.preprocessing_artifact_path
+        else None
+    )
     best_model_path = checkpoint_dir / f"{subset.lower()}_lstm_best.pth"
     last_checkpoint_path = checkpoint_dir / f"{subset.lower()}_last_checkpoint.pt"
     best_checkpoint_path = checkpoint_dir / f"{subset.lower()}_best_checkpoint.pt"
@@ -146,8 +151,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         rul_patience=int(dataset_cfg["rul_patience"]),
     )
 
-    df_train_raw = read_cmapss_table(train_file)
-    df_train, artifact = fit_transform_train(df_train_raw, params, scaler_path)
+    if args.mode == "eval" and external_artifact_path is not None:
+        artifact = load_preprocessing_artifact(external_artifact_path)
+        df_train_raw = read_cmapss_table(train_file)
+        df_train, _ = fit_transform_train(df_train_raw, params, artifact_path=None)
+    else:
+        df_train_raw = read_cmapss_table(train_file)
+        df_train, artifact = fit_transform_train(df_train_raw, params, scaler_path)
     features = artifact["features"]
     initial_rul = int(artifact["initial_rul"])
     input_size = len(features)
@@ -230,7 +240,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         )
 
     if args.mode in {"eval", "train_eval"}:
-        artifact = load_preprocessing_artifact(scaler_path)
+        artifact = load_preprocessing_artifact(external_artifact_path or scaler_path)
         df_test = read_cmapss_table(test_file)
         df_test = transform_with_artifact(
             df_test,
@@ -244,10 +254,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         )
         y_true = read_rul(rul_file).to_numpy(dtype=np.float32)
 
-        if best_model_path.exists():
-            model.load_state_dict(torch.load(best_model_path, map_location=device))
-        elif args.model_path:
+        if args.model_path:
             model.load_state_dict(torch.load(path_from_root(root, args.model_path), map_location=device))
+        elif best_model_path.exists():
+            model.load_state_dict(torch.load(best_model_path, map_location=device))
         else:
             raise FileNotFoundError(f"No model found at {best_model_path}.")
 
@@ -268,6 +278,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", default=None)
     parser.add_argument("--checkpoint-dir", default=None)
     parser.add_argument("--model-path", default=None)
+    parser.add_argument("--preprocessing-artifact-path", default=None)
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--max-epochs", type=int, default=None)
     parser.add_argument("--resume", action="store_true")
@@ -277,4 +288,3 @@ def parse_args() -> argparse.Namespace:
 
 if __name__ == "__main__":
     run(parse_args())
-
