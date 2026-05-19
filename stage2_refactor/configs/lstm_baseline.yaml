@@ -1,0 +1,100 @@
+{
+  "project_name": "ece228-cmapss-stage2",
+  "model": {
+    "name": "lstm",
+    "hidden_size": 60,
+    "num_layers": 4,
+    "dropout": 0.1
+  },
+  "training": {
+    "seed": 42,
+    "batch_size": 15,
+    "learning_rate": 0.002,
+    "weight_decay": 0.00001,
+    "epochs": 150,
+    "shuffle": true,
+    "drop_last": true,
+    "checkpoint_every_epoch": true
+  },
+  "validation": {
+    "enabled": false,
+    "fraction": 0.15,
+    "patience": 10
+  },
+  "preprocessing": {
+    "sequence_length": 30,
+    "median_window": 5,
+    "kmeans_clusters": 6,
+    "kmeans_random_state": 42,
+    "kmeans_n_init": 10,
+    "apply_median_filter_to_test": false
+  },
+  "paths": {
+    "data_dir": "CMaps",
+    "output_dir": "stage2_refactor/outputs",
+    "checkpoint_dir": "stage2_refactor/outputs/checkpoints"
+  },
+  "datasets": {
+    "FD001": {
+      "train_file": "CMaps/train_FD001.txt",
+      "test_file": "CMaps/test_FD001.txt",
+      "rul_file": "CMaps/RUL_FD001.txt",
+      "drop_cols": ["sensor_1", "sensor_5", "sensor_6", "sensor_10", "sensor_16", "sensor_18", "sensor_19"],
+      "rul_window_size": 12,
+      "rul_threshold": 0.2,
+      "rul_patience": 1,
+      "batch_size": 15,
+      "learning_rate": 0.002,
+      "epochs": 150,
+      "hidden_size": 60,
+      "num_layers": 4,
+      "dropout": 0.1
+    },
+    "FD002": {
+      "train_file": "CMaps/train_FD002.txt",
+      "test_file": "CMaps/test_FD002.txt",
+      "rul_file": "CMaps/RUL_FD002.txt",
+      "drop_cols": [],
+      "rul_window_size": 12,
+      "rul_threshold": 0.2,
+      "rul_patience": 1,
+      "batch_size": 15,
+      "learning_rate": 0.002,
+      "epochs": 150,
+      "hidden_size": 60,
+      "num_layers": 4,
+      "dropout": 0.1
+    },
+    "FD003": {
+      "train_file": "CMaps/train_FD003.txt",
+      "test_file": "CMaps/test_FD003.txt",
+      "rul_file": "CMaps/RUL_FD003.txt",
+      "drop_cols": ["sensor_1", "sensor_5", "sensor_16", "sensor_18", "sensor_19"],
+      "rul_window_size": 12,
+      "rul_threshold": 0.2,
+      "rul_patience": 2,
+      "batch_size": 20,
+      "learning_rate": 0.001,
+      "epochs": 250,
+      "hidden_size": 90,
+      "num_layers": 6,
+      "dropout": 0.1
+    },
+    "FD004": {
+      "train_file": "CMaps/train_FD004.txt",
+      "test_file": "CMaps/test_FD004.txt",
+      "rul_file": "CMaps/RUL_FD004.txt",
+      "drop_cols": [],
+      "rul_window_size": 12,
+      "rul_threshold": 0.3,
+      "rul_patience": 3,
+      "batch_size": 10,
+      "learning_rate": 0.001,
+      "epochs": 20,
+      "hidden_size": 30,
+      "num_layers": 2,
+      "dropout": 0.1
+    }
+  }
+}
+
