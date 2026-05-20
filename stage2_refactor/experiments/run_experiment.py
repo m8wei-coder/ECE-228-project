@@ -145,6 +145,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     config = load_config(path_from_root(root, args.config))
     if args.apply_median_filter_to_test is not None:
         config["preprocessing"]["apply_median_filter_to_test"] = args.apply_median_filter_to_test
+    if args.validation_enabled is not None:
+        config["validation"]["enabled"] = args.validation_enabled
+    if args.validation_fraction is not None:
+        config["validation"]["fraction"] = args.validation_fraction
+    if args.validation_patience is not None:
+        config["validation"]["patience"] = args.validation_patience
     subset = args.subset.upper()
     dataset_cfg = dict(config["datasets"][subset])
     selected_model_name = args.model or config.get("model", {}).get("name", "lstm")
@@ -237,6 +243,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "seed": seed,
         "git_commit": git_commit_hash(root),
         "input_size": input_size,
+        "hidden_size": int(model_cfg["hidden_size"]),
+        "num_layers": int(model_cfg["num_layers"]),
+        "dropout": float(model_cfg["dropout"]),
+        "learning_rate": float(training_cfg["learning_rate"]),
+        "batch_size": int(training_cfg["batch_size"]),
         "features": features,
         "initial_rul": initial_rul,
         "sequence_length": int(preprocessing_cfg["sequence_length"]),
@@ -347,6 +358,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dropout", type=float, default=None)
     parser.add_argument("--learning-rate", type=float, default=None)
     parser.add_argument("--batch-size", type=int, default=None)
+    parser.add_argument(
+        "--validation-enabled",
+        dest="validation_enabled",
+        action="store_true",
+        default=None,
+    )
+    parser.add_argument(
+        "--validation-disabled",
+        dest="validation_enabled",
+        action="store_false",
+    )
+    parser.add_argument("--validation-fraction", type=float, default=None)
+    parser.add_argument("--validation-patience", type=int, default=None)
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--use-wandb", action="store_true")
     parser.add_argument(
