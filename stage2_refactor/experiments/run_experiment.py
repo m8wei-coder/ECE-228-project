@@ -154,6 +154,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         training_cfg["epochs"] = args.max_epochs
     if args.seed is not None:
         training_cfg["seed"] = args.seed
+    if args.hidden_size is not None:
+        model_cfg["hidden_size"] = args.hidden_size
+    if args.num_layers is not None:
+        model_cfg["num_layers"] = args.num_layers
+    if args.dropout is not None:
+        model_cfg["dropout"] = args.dropout
+    if args.learning_rate is not None:
+        training_cfg["learning_rate"] = args.learning_rate
+    if args.batch_size is not None:
+        training_cfg["batch_size"] = args.batch_size
 
     model_name = model_cfg["name"]
     run_id = args.run_id or build_run_id(model_cfg, training_cfg)
@@ -332,6 +342,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--run-id", default=None)
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--max-epochs", type=int, default=None)
+    parser.add_argument("--hidden-size", type=int, default=None)
+    parser.add_argument("--num-layers", type=int, default=None)
+    parser.add_argument("--dropout", type=float, default=None)
+    parser.add_argument("--learning-rate", type=float, default=None)
+    parser.add_argument("--batch-size", type=int, default=None)
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--use-wandb", action="store_true")
     parser.add_argument(
