@@ -1,3 +1,4 @@
+# Teammate's stage 2 local files
 Project_Proposal.pdf
 stage2_plan.md
 codex_prompt.md
@@ -5,3 +6,24 @@ stage2_refactor/outputs/
 ece228_stage2/
 fd001_summary/
 .claude
+
+# Data / generated artifacts
+reproduce/csv/
+reproduce/exports/
+reproduce/logs/
+stage3/artifacts/
+
+# Archives
+*.tar
+
+# Python
+__pycache__/
+**/__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/
+
+# macOS
+.DS_Store
+**/.DS_Store
