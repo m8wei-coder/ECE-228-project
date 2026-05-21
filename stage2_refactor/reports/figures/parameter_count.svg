@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="470" viewBox="0 0 860 470">
+<style>
+.title{font:700 20px Arial,sans-serif;fill:#111827}
+.label{font:12px Arial,sans-serif;fill:#374151}
+.tick{font:11px Arial,sans-serif;fill:#6b7280}
+.axis{stroke:#9ca3af;stroke-width:1}
+.grid{stroke:#e5e7eb;stroke-width:1}
+.err{stroke:#111827;stroke-width:1.5}
+.note{font:11px Arial,sans-serif;fill:#6b7280}
+</style>
+<text class="title" x="82" y="32">Final Stage 2 Parameter Count by Subset</text>
+<text class="label" x="18" y="221.0" transform="rotate(-90 18 221.0)">Trainable parameters</text>
+<line class="grid" x1="82" y1="378.0" x2="824" y2="378.0"/>
+<text class="tick" x="72" y="382.0" text-anchor="end">0.0</text>
+<line class="grid" x1="82" y1="315.2" x2="824" y2="315.2"/>
+<text class="tick" x="72" y="319.2" text-anchor="end">22784.0</text>
+<line class="grid" x1="82" y1="252.4" x2="824" y2="252.4"/>
+<text class="tick" x="72" y="256.4" text-anchor="end">45568.1</text>
+<line class="grid" x1="82" y1="189.6" x2="824" y2="189.6"/>
+<text class="tick" x="72" y="193.6" text-anchor="end">68352.1</text>
+<line class="grid" x1="82" y1="126.8" x2="824" y2="126.8"/>
+<text class="tick" x="72" y="130.8" text-anchor="end">91136.1</text>
+<line class="grid" x1="82" y1="64.0" x2="824" y2="64.0"/>
+<text class="tick" x="72" y="68.0" text-anchor="end">113920.1</text>
+<line class="axis" x1="82" y1="64" x2="82" y2="378"/>
+<line class="axis" x1="82" y1="378" x2="824" y2="378"/>
+<rect x="122.8" y="152.3" width="103.9" height="225.7" rx="3" fill="#0f766e"/>
+<text class="label" x="174.8" y="144.3" text-anchor="middle">81901.00</text>
+<text class="label" x="174.8" y="400" text-anchor="middle">FD001</text>
+<text class="tick" x="174.8" y="418" text-anchor="middle">GRU</text>
+<rect x="308.3" y="105.0" width="103.9" height="273.0" rx="3" fill="#b45309"/>
+<text class="label" x="360.2" y="97.0" text-anchor="middle">99061.00</text>
+<text class="label" x="360.2" y="400" text-anchor="middle">FD002</text>
+<text class="tick" x="360.2" y="418" text-anchor="middle">BIGRU</text>
+<rect x="493.8" y="150.8" width="103.9" height="227.2" rx="3" fill="#0f766e"/>
+<text class="label" x="545.8" y="142.8" text-anchor="middle">82441.00</text>
+<text class="label" x="545.8" y="400" text-anchor="middle">FD003</text>
+<text class="tick" x="545.8" y="418" text-anchor="middle">GRU</text>
+<rect x="679.3" y="105.0" width="103.9" height="273.0" rx="3" fill="#b45309"/>
+<text class="label" x="731.2" y="97.0" text-anchor="middle">99061.00</text>
+<text class="label" x="731.2" y="400" text-anchor="middle">FD004</text>
+<text class="tick" x="731.2" y="418" text-anchor="middle">BIGRU</text>
+<text class="note" x="82" y="450">Error bars show one standard deviation across 3 seeds.</text>
+</svg>
