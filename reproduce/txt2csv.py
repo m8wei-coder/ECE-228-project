@@ -1,7 +1,7 @@
 """
 Convert raw C-MAPSS .txt files to CSV files that reproduce/*.py expects.
 
-Source : ../ECE 228/CMaps/{train,test,RUL}_FD00X.txt
+Source : ../CMaps/{train,test,RUL}_FD00X.txt   (repo root, committed by teammate)
 Target : ./csv/{train,test,rul}/{train,test,RUL}_FD00X.csv
 
 Column spec (confirmed against reproduce/data_preprocessing.py):
@@ -17,7 +17,7 @@ import sys
 import pandas as pd
 
 SRC_DIR = os.path.normpath(
-    os.path.join(os.path.dirname(__file__), "..", "..", "ECE 228", "CMaps")
+    os.path.join(os.path.dirname(__file__), "..", "CMaps")
 )
 DST_ROOT = os.path.join(os.path.dirname(__file__), "csv")
 

@@ -11,7 +11,10 @@ fd001_summary/
 reproduce/csv/
 reproduce/exports/
 reproduce/logs/
-stage3/artifacts/
+
+# stage3 artifacts: ignore everything except small precomputed graph .npy
+stage3/artifacts/*
+!stage3/artifacts/*.npy
 
 # Archives
 *.tar

@@ -1,0 +1,133 @@
+# Stage 3 config — RecurrentGNNFusion per subset
+#
+# Note: this YAML intentionally mirrors stage2_refactor/configs/lstm_baseline.yaml
+# structure where possible, so we can reuse Stage 2's load_config patterns.
+#
+# Backbone choice per subset is locked by the Stage 2 finalist decision:
+#   FD001 / FD003 -> GRU   (h=90, L=2, d=0.2, lr=5e-4)
+#   FD002 / FD004 -> BiGRU (h=60, L=2, d=0.1, lr=5e-4)
+
+project_name: ece228-cmapss-stage3
+
+# Defaults shared across subsets (per-subset blocks override these).
+defaults:
+  preprocessing:
+    sequence_length: 30
+    median_window: 5
+    kmeans_clusters: 6
+    kmeans_random_state: 42
+    kmeans_n_init: 10
+    apply_median_filter_to_test: false   # aligned with Stage 2 finalists
+  training:
+    seed: 42
+    batch_size: 15
+    weight_decay: 1.0e-5
+    epochs: 150
+    shuffle: true
+    drop_last: true
+    checkpoint_every_epoch: true
+  validation:
+    enabled: true                        # aligned with Stage 2 finalists
+    fraction: 0.15
+    patience: 10
+  gnn:
+    kind: gcn                            # "gcn" or "gat"
+    hidden_dim: 32
+    out_dim: 32
+    num_layers: 2
+    heads: 4                             # GAT only
+    dropout: 0.1
+    pool: mean                           # "mean" / "add" / "max"
+  graph:
+    kind: pearson                        # "pearson" or "physical"
+    pearson_threshold: 0.3               # used if kind == pearson and top_k is null
+    pearson_top_k: null
+    pearson_abs: true
+  node_features:
+    kind: stats                          # "stats" -> [mean, std, last, slope] per sensor per window
+    d_node: 4
+  fusion:
+    hidden_dim: 64
+    dropout: 0.1
+
+paths:
+  cmaps_dir: CMaps                       # repo-root data dir (teammate committed)
+  artifacts_dir: stage3/artifacts        # graphs/, runs/, ablation/ live here
+  stage1_exports_dir: reproduce/exports  # for pearson corr_matrix.npy
+
+subsets:
+  FD001:
+    data:
+      train_file: CMaps/train_FD001.txt
+      test_file: CMaps/test_FD001.txt
+      rul_file:  CMaps/RUL_FD001.txt
+      drop_cols: [sensor_1, sensor_5, sensor_6, sensor_10, sensor_16, sensor_18, sensor_19]
+      rul_window_size: 12
+      rul_threshold: 0.2
+      rul_patience: 1
+    recurrent:
+      kind: gru        # finalist
+      hidden_size: 90
+      num_layers: 2
+      dropout: 0.2
+    training:
+      batch_size: 15
+      learning_rate: 5.0e-4
+      epochs: 150
+
+  FD002:
+    data:
+      train_file: CMaps/train_FD002.txt
+      test_file: CMaps/test_FD002.txt
+      rul_file:  CMaps/RUL_FD002.txt
+      drop_cols: []
+      rul_window_size: 12
+      rul_threshold: 0.2
+      rul_patience: 1
+    recurrent:
+      kind: bigru      # finalist
+      hidden_size: 60
+      num_layers: 2
+      dropout: 0.1
+    training:
+      batch_size: 15
+      learning_rate: 5.0e-4
+      epochs: 150
+
+  FD003:
+    data:
+      train_file: CMaps/train_FD003.txt
+      test_file: CMaps/test_FD003.txt
+      rul_file:  CMaps/RUL_FD003.txt
+      drop_cols: [sensor_1, sensor_5, sensor_16, sensor_18, sensor_19]
+      rul_window_size: 12
+      rul_threshold: 0.2
+      rul_patience: 2
+    recurrent:
+      kind: gru        # finalist
+      hidden_size: 90
+      num_layers: 2
+      dropout: 0.2
+    training:
+      batch_size: 20
+      learning_rate: 5.0e-4
+      epochs: 250
+
+  FD004:
+    data:
+      train_file: CMaps/train_FD004.txt
+      test_file: CMaps/test_FD004.txt
+      rul_file:  CMaps/RUL_FD004.txt
+      drop_cols: []
+      rul_window_size: 12
+      rul_threshold: 0.3
+      rul_patience: 3
+    recurrent:
+      kind: bigru      # finalist
+      hidden_size: 60
+      num_layers: 2
+      dropout: 0.1
+    training:
+      batch_size: 10
+      learning_rate: 5.0e-4
+      epochs: 150       # Stage 2 finalist trained more than Stage 1's 20 epochs
