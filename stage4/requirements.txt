@@ -1,0 +1,25 @@
+# Stage 4 third-party dependencies.
+#
+# Stage 4 imports `stage2_refactor` (data + trainer) and `stage3` (RGNN
+# backbone) as libraries, so the union of all three stages' deps is required
+# to run end-to-end. CBAM itself is pure PyTorch — no new dependencies.
+
+# --- Stage 4 direct ---
+# (none; the CBAM modules in stage4/models/attention.py use only torch.nn)
+
+# --- inherited from stage3 ---
+torch_geometric==2.7.0       # DenseGCNConv used inside stage3/models/gnn_modules.py
+
+# --- inherited from stage2_refactor ---
+torch                        # Colab ships its own; locally any 2.x works
+numpy
+pandas
+scipy
+scikit-learn==1.4.2          # pinned so we can deserialize the saved kmeans/scalers from reproduce/logs/*.gz
+joblib
+pyyaml
+threadpoolctl                # transitive via sklearn
+
+# --- optional ---
+# wandb                      # only if --use-wandb is flipped in stage2's trainer; not used by Stage 4 default
+matplotlib                   # for stage4/reports figures

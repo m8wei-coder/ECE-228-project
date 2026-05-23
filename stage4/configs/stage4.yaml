@@ -1,0 +1,99 @@
+# Stage 4 config — CBAM-augmented Stage 3 finalist per subset.
+#
+# Per-subset backbone follows Stage 3 finalist decision:
+#   FD001 -> GRU,   no GNN     (Stage 3 said pure GRU wins on FD001)
+#   FD002 -> BiGRU + GNN-physical
+#   FD003 -> GRU   + GNN-physical
+#   FD004 -> BiGRU + GNN-physical
+#
+# Stage 4 adds CBAM1D (channel + temporal attention) on the input window.
+
+project_name: ece228-cmapss-stage4
+
+defaults:
+  preprocessing:
+    sequence_length: 30
+    median_window: 5
+    kmeans_clusters: 6
+    kmeans_random_state: 42
+    kmeans_n_init: 10
+    apply_median_filter_to_test: false
+  training:
+    seed: 42
+    weight_decay: 1.0e-5
+    shuffle: true
+    drop_last: true
+    checkpoint_every_epoch: true
+  validation:
+    enabled: true
+    fraction: 0.15
+    patience: 10
+  attention:
+    use_channel: true
+    use_temporal: true
+    reduction: 4         # ChannelAttention MLP reduction ratio
+    kernel_size: 7       # TemporalAttention 1-D conv kernel
+  gnn:
+    kind: gcn
+    hidden_dim: 32
+    num_layers: 2
+    dropout: 0.1
+    pool: mean
+  graph:
+    kind: physical       # Stage 3 winner
+  fusion:
+    dropout: 0.1
+
+paths:
+  cmaps_dir: CMaps
+  stage3_artifacts_dir: stage3/artifacts   # adj_*.npy come from Stage 3
+  artifacts_dir: stage4/artifacts          # runs/ ablation/ live here
+
+subsets:
+  FD001:
+    use_gnn: false
+    recurrent:
+      kind: gru
+      hidden_size: 90
+      num_layers: 2
+      dropout: 0.2
+    training:
+      batch_size: 15
+      learning_rate: 5.0e-4
+      epochs: 150
+
+  FD002:
+    use_gnn: true
+    recurrent:
+      kind: bigru
+      hidden_size: 60
+      num_layers: 2
+      dropout: 0.1
+    training:
+      batch_size: 15
+      learning_rate: 5.0e-4
+      epochs: 150
+
+  FD003:
+    use_gnn: true
+    recurrent:
+      kind: gru
+      hidden_size: 90
+      num_layers: 2
+      dropout: 0.2
+    training:
+      batch_size: 20
+      learning_rate: 5.0e-4
+      epochs: 250
+
+  FD004:
+    use_gnn: true
+    recurrent:
+      kind: bigru
+      hidden_size: 60
+      num_layers: 2
+      dropout: 0.1
+    training:
+      batch_size: 10
+      learning_rate: 5.0e-4
+      epochs: 150

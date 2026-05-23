@@ -16,6 +16,9 @@ reproduce/logs/
 stage3/artifacts/*
 !stage3/artifacts/*.npy
 
+# stage4 artifacts: ignore checkpoints / per-run outputs (kept on Drive)
+stage4/artifacts/
+
 # Archives
 *.tar
 
