@@ -17,7 +17,6 @@ stage3/
 │   ├── gnn_modules.py         # DenseGCNConv-based GCN branch (+ GAT placeholder)
 │   └── recurrent_gnn.py       # RecurrentGNNFusion: inherits BaseModel, fuses recurrent + GNN
 ├── train_stage3.py            # training entry; reuses stage2_refactor data / fit / evaluate
-├── ablation.py                # CLI scaffold for matrix-style ablation runs
 ├── configs/
 │   └── stage3.yaml            # per-subset finalist config + GNN / graph hyperparams
 ├── notebooks/
