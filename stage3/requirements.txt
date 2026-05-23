@@ -1,0 +1,22 @@
+# Stage 3 third-party dependencies.
+#
+# Stage 3 imports `stage2_refactor` as a library (data pipeline, trainer,
+# evaluator), so the union of both stages' deps is required to run end-to-end.
+# All packages below are confirmed working in the local `ece228` conda env
+# and on Colab T4 GPU (where torch_geometric 2.7.0 was used).
+
+# --- Stage 3 direct ---
+torch_geometric==2.7.0       # DenseGCNConv used by stage3/models/gnn_modules.py
+
+# --- inherited from stage2_refactor ---
+torch                        # Colab ships its own; locally any 2.x works
+numpy
+pandas
+scipy
+scikit-learn==1.4.2          # pinned so we can deserialize the saved kmeans/scalers from reproduce/logs/*.gz
+joblib
+pyyaml                       # optional config loading path in run_experiment.py
+threadpoolctl                # transitive via sklearn; pin only if macOS hits the get_config() bug
+
+# --- optional ---
+# wandb                      # only if you flip --use-wandb in stage2's trainer; not used by Stage 3 default
