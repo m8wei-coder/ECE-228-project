@@ -52,6 +52,8 @@ class AttnRecurrent(BaseModel):
         use_temporal_attn: bool = True,
         attn_reduction: int = 4,
         attn_kernel: int = 7,
+        attn_dropout: float = 0.0,
+        attn_order: str = "channel_first",
     ) -> None:
         super().__init__()
         if recurrent_kind not in {"gru", "bigru"}:
@@ -69,6 +71,8 @@ class AttnRecurrent(BaseModel):
             kernel_size=attn_kernel,
             use_channel=use_channel_attn,
             use_temporal=use_temporal_attn,
+            attn_dropout=attn_dropout,
+            order=attn_order,
         )
 
         bidirectional = recurrent_kind == "bigru"

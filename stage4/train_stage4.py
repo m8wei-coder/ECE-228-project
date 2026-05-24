@@ -193,6 +193,8 @@ def build_model(
         use_temporal_attn=bool(args.use_temporal_attn),
         attn_reduction=int(args.attn_reduction),
         attn_kernel=int(args.attn_kernel),
+        attn_dropout=float(args.attn_dropout),
+        attn_order=str(args.attn_order),
     )
     if use_gnn:
         # Lazy import: torch_geometric required.
@@ -311,6 +313,8 @@ def run(args: argparse.Namespace) -> dict:
         "use_temporal_attn": bool(args.use_temporal_attn),
         "attn_reduction": int(args.attn_reduction),
         "attn_kernel": int(args.attn_kernel),
+        "attn_dropout": float(args.attn_dropout),
+        "attn_order": str(args.attn_order),
         "gnn_hidden": int(args.gnn_hidden) if use_gnn else None,
         "gnn_layers": int(args.gnn_layers) if use_gnn else None,
         "gnn_kind": args.gnn_kind if use_gnn else None,
@@ -394,6 +398,10 @@ def parse_args() -> argparse.Namespace:
                    action="store_true", default=False)
     p.add_argument("--attn-reduction", type=int, default=4)
     p.add_argument("--attn-kernel",    type=int, default=7)
+    p.add_argument("--attn-dropout",   type=float, default=0.0,
+                   help="Dropout applied after each CBAM sub-module (0.0 = off, default).")
+    p.add_argument("--attn-order",     default="channel_first",
+                   choices=["channel_first", "temporal_first"])
 
     # GNN branch flags. Tri-state: None means "use subset default".
     p.add_argument("--use-gnn", dest="use_gnn",

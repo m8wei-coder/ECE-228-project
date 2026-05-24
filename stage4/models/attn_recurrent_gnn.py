@@ -82,6 +82,8 @@ class AttnRecurrentGNN(BaseModel):
         use_temporal_attn: bool = True,
         attn_reduction: int = 4,
         attn_kernel: int = 7,
+        attn_dropout: float = 0.0,
+        attn_order: str = "channel_first",
     ) -> None:
         super().__init__()
         self.input_size = input_size
@@ -96,6 +98,8 @@ class AttnRecurrentGNN(BaseModel):
             kernel_size=attn_kernel,
             use_channel=use_channel_attn,
             use_temporal=use_temporal_attn,
+            attn_dropout=attn_dropout,
+            order=attn_order,
         )
 
         # Delegate the recurrent + GNN + fusion head to the Stage 3 model.

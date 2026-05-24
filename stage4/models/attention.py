@@ -124,10 +124,19 @@ class CBAM1D(nn.Module):
         kernel_size: TemporalAttention 1-D conv kernel (positive odd int).
         use_channel: enable the channel-attention sub-module.
         use_temporal: enable the temporal-attention sub-module.
+        attn_dropout: dropout probability applied to the post-gated features
+            after each enabled sub-module. 0.0 disables (default), preserving
+            backward compatibility with earlier Stage 4 runs.
+        order: sub-module application order. "channel_first" (default) matches
+            the CBAM paper; "temporal_first" swaps them so temporal attention
+            runs before channel attention.
 
-    When both flags are False the module is a no-op pass-through, which is
-    the natural ablation control (Stage 3 baseline).
+    When both `use_channel` and `use_temporal` are False the module is a
+    no-op pass-through, which is the natural ablation control (Stage 3
+    baseline).
     """
+
+    _VALID_ORDERS = ("channel_first", "temporal_first")
 
     def __init__(
         self,
@@ -136,10 +145,22 @@ class CBAM1D(nn.Module):
         kernel_size: int = 7,
         use_channel: bool = True,
         use_temporal: bool = True,
+        attn_dropout: float = 0.0,
+        order: str = "channel_first",
     ) -> None:
         super().__init__()
+        if order not in self._VALID_ORDERS:
+            raise ValueError(
+                f"order must be one of {self._VALID_ORDERS}, got {order!r}"
+            )
+        if not 0.0 <= attn_dropout < 1.0:
+            raise ValueError(
+                f"attn_dropout must be in [0.0, 1.0), got {attn_dropout}"
+            )
         self.use_channel = use_channel
         self.use_temporal = use_temporal
+        self.attn_dropout_p = float(attn_dropout)
+        self.order = order
         if use_channel:
             self.channel_attn = ChannelAttention(num_channels, reduction=reduction)
         else:
@@ -148,12 +169,22 @@ class CBAM1D(nn.Module):
             self.temporal_attn = TemporalAttention(kernel_size=kernel_size)
         else:
             self.temporal_attn = None
+        # Single shared Dropout layer is fine: Dropout has no learnable params
+        # and re-applying it twice (after channel, after temporal) just gives
+        # two independent dropout masks, which is exactly what we want.
+        self.dropout = (
+            nn.Dropout(attn_dropout) if attn_dropout > 0.0 else nn.Identity()
+        )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        if self.channel_attn is not None:
-            x = self.channel_attn(x)
-        if self.temporal_attn is not None:
-            x = self.temporal_attn(x)
+        first = self.channel_attn if self.order == "channel_first" else self.temporal_attn
+        second = self.temporal_attn if self.order == "channel_first" else self.channel_attn
+        if first is not None:
+            x = first(x)
+            x = self.dropout(x)
+        if second is not None:
+            x = second(x)
+            x = self.dropout(x)
         return x
 
     @staticmethod
