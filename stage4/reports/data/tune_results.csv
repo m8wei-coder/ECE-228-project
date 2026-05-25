@@ -1,0 +1,9 @@
+subset,sweep,knob,cell,n_seeds,rmse_mean,rmse_std,score_mean,score_std
+FD002,dropout,drop0.2,cbam_full,3,17.8909,0.3925,3611.6323,1477.0186
+FD002,order,tempfirst,cbam_full,3,14.3184,1.1231,1450.9978,368.7695
+FD002,reduction,r2,channel_only,3,14.3118,0.6173,1531.8964,584.0011
+FD002,reduction,r8,channel_only,3,14.4812,0.8167,1587.6236,443.3390
+FD004,dropout,drop0.2,cbam_full,3,18.7058,1.0323,2377.3419,1233.1376
+FD004,kernel,k11,temporal_only,3,16.3789,1.7072,1034.8600,204.3560
+FD004,kernel,k3,temporal_only,3,16.2301,0.5669,1202.4246,154.7322
+FD004,order,tempfirst,cbam_full,3,17.5220,2.6363,1196.8243,357.2523
