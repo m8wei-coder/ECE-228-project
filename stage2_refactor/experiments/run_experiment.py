@@ -22,10 +22,7 @@ from stage2_refactor.data.preprocessing import (
     load_preprocessing_artifact,
     transform_with_artifact,
 )
-from stage2_refactor.models.bigru import BiGRUBaseline
-from stage2_refactor.models.bilstm import BiLSTMBaseline
-from stage2_refactor.models.gru import GRUBaseline
-from stage2_refactor.models.lstm import LSTMBaseline
+from stage2_refactor.models import MODEL_REGISTRY, build_baseline_model
 from stage2_refactor.training.evaluator import count_parameters, rmse_score
 from stage2_refactor.training.logging import CSVLogger, WandbLogger
 from stage2_refactor.training.trainer import fit, set_seed
@@ -84,16 +81,8 @@ def git_commit_hash(root: Path) -> str:
 
 def build_model(input_size: int, model_cfg: dict[str, Any]) -> torch.nn.Module:
     model_name = model_cfg.get("name", "lstm")
-    model_classes = {
-        "lstm": LSTMBaseline,
-        "gru": GRUBaseline,
-        "bilstm": BiLSTMBaseline,
-        "bigru": BiGRUBaseline,
-    }
-    if model_name not in model_classes:
-        raise ValueError(f"Unknown model {model_name}. Choose from {sorted(model_classes)}.")
-
-    return model_classes[model_name](
+    return build_baseline_model(
+        name=model_name,
         input_size=input_size,
         hidden_size=int(model_cfg["hidden_size"]),
         num_layers=int(model_cfg["num_layers"]),
@@ -349,7 +338,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--checkpoint-dir", default=None)
     parser.add_argument("--model-path", default=None)
     parser.add_argument("--preprocessing-artifact-path", default=None)
-    parser.add_argument("--model", choices=["lstm", "gru", "bilstm", "bigru"], default=None)
+    parser.add_argument("--model", choices=sorted(MODEL_REGISTRY), default=None)
     parser.add_argument("--run-id", default=None)
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--max-epochs", type=int, default=None)
