@@ -21,10 +21,8 @@ def prepare_test_data(test_file, rul_file, sequence_length, scaler_path):
 
     df_test[features] = df_test[features].astype(float)
 
-    # KMeans uses settings only
     df_test['condition'] = kmeans.predict(df_test[settings_cols])
 
-    # Scalers transform sensor features only
     for condition in range(6):
         idx = df_test['condition'] == condition
 
