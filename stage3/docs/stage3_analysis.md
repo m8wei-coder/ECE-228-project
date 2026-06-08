@@ -2,7 +2,7 @@
 
 ## Goal and Method
 
-Stage 3 extends the Stage 2 recurrent baseline by adding a graph-neural-network branch that explicitly models the spatial relationship between engine sensors. The two branches share the (B, 30, F) input window; the recurrent branch consumes it as a sequence and the GNN branch consumes its transpose (B, F, 30) — each retained sensor becomes a node whose feature vector is its 30-step reading. The two outputs are concatenated and passed through a shared regression head, all inside the Stage 2 `BaseModel` contract so the teammate's trainer / evaluator can run the new model without modification.
+Stage 3 extends the Stage 2 recurrent baseline by adding a graph-neural-network branch that explicitly models the spatial relationship between engine sensors. The two branches share the (B, 30, F) input window; the recurrent branch consumes it as a sequence and the GNN branch consumes its transpose (B, F, 30) — each retained sensor becomes a node whose feature vector is its 30-step reading. The two outputs are concatenated and passed through a shared regression head, all inside the Stage 2 `BaseModel` contract so the Stage 2 trainer / evaluator can run the new model without modification.
 
 **Recurrent backbones** (subset-specific, locked from Stage 2 finalists):
 - FD001 / FD003 → GRU, hidden 90, 2 layers, dropout 0.2
@@ -127,7 +127,7 @@ The dramatic Score improvement on FD002 and FD004 is the main contribution of St
 
 ## Notes
 
-- All Stage 3 results above were trained on Colab T4 GPU using the same `stage2_refactor` data / training / evaluation modules — the only Stage-3-local code is `stage3/build_graph.py`, `stage3/models/`, and `stage3/train_stage3.py`. Teammate's Stage 2 code was not modified.
+- All Stage 3 results above were trained on Colab T4 GPU using the same `stage2_refactor` data / training / evaluation modules — the only Stage-3-local code is `stage3/build_graph.py`, `stage3/models/`, and `stage3/train_stage3.py`. The `stage2_refactor/` package is imported as a library and not modified.
 - 3 seeds: 7, 42, 123 (matching Stage 2 finalists for direct comparison).
 - `validation_enabled=True`, engine-level 15% split, `patience=10`.
 - `apply_median_filter_to_test = False`.
