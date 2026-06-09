@@ -1,33 +1,3 @@
-"""CBAM-style 1D attention modules for C-MAPSS sensor-time tensors.
-
-Designed to drop in front of the Stage 2 recurrent backbone / Stage 3
-RecurrentGNNFusion. Input and output shapes are both `(B, T, F)` so the
-downstream model code requires no changes.
-
-Adapted from:
-    Woo et al., "CBAM: Convolutional Block Attention Module", ECCV 2018.
-
-Adaptation notes
-----------------
-The original CBAM is defined for 2-D feature maps (B, C, H, W). For C-MAPSS
-we have 1-D windows (B, T, F):
-- "channels" are sensors (F);
-- "spatial" is the time axis (T).
-
-ChannelAttention -> "which sensors matter":
-    pool along time (avg + max) -> shared MLP (F -> F/r -> F) ->
-    add -> sigmoid -> gate of shape (B, 1, F) broadcast over T.
-
-TemporalAttention -> "which time steps matter":
-    pool along channels (avg + max) -> 1-D conv (kernel=7) ->
-    sigmoid -> gate of shape (B, T, 1) broadcast over F.
-
-CBAM1D applies channel-then-temporal in series, matching the CBAM paper's
-ordering. Parameter count is dominated by the channel MLP (~2 * F * F / r)
-and is well under 1k for F<=21, r=4 -- consistent with the project's
-"lightweight augmentation" requirement.
-"""
-
 from __future__ import annotations
 
 import torch

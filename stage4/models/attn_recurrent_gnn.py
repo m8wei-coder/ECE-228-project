@@ -1,9 +1,4 @@
-"""AttnRecurrentGNN: CBAM1D applied to the input window of Stage 3 RGNN.
-
-For subsets whose Stage 3 finalist is recurrent + GNN-physical (FD002,
-FD003, FD004 per `stage3/docs/stage3_analysis.md`), Stage 4 wraps that
-architecture with a CBAM1D attention block at the input.
-
+"""
 Architecture
 ------------
     x : (B, T=30, F)
@@ -20,12 +15,6 @@ Architecture
                                             fuse v
                                           Linear -> ReLU -> Dropout -> Linear -> 1
 
-Implementation note
--------------------
-We delegate the entire recurrent + GNN + fusion block to
-`stage3.RecurrentGNNFusion`, so the only Stage 4-local code is the CBAM
-prefix and a thin wrapper around its forward(). This guarantees identical
-backbone behaviour to Stage 3 when both CBAM sub-modules are disabled.
 """
 
 from __future__ import annotations
@@ -47,21 +36,6 @@ from stage4.models.attention import CBAM1D
 
 
 class AttnRecurrentGNN(BaseModel):
-    """CBAM1D + Stage 3 RecurrentGNNFusion.
-
-    Args:
-        input_size : F, retained sensors for the subset.
-        recurrent_kind : "gru" or "bigru".
-        hidden_size, num_layers, dropout : recurrent backbone hyperparams.
-        sequence_length : T (default 30).
-        adj_matrix : (F, F) fixed adjacency; required when use_gnn=True.
-        gnn_hidden, gnn_layers, gnn_kind, gnn_dropout, gnn_pool : GNN
-            branch hyperparams; ignored when use_gnn=False.
-        use_gnn : whether to instantiate the GNN branch (Stage 3 ablation
-            switch). If False the model degenerates to AttnRecurrent.
-        use_channel_attn, use_temporal_attn : independent CBAM toggles.
-        attn_reduction, attn_kernel : CBAM hyperparams.
-    """
 
     def __init__(
         self,

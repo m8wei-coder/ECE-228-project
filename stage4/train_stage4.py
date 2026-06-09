@@ -1,23 +1,3 @@
-"""Stage 4 training entry.
-
-Pure orchestration: data pipeline, training loop, test-time evaluation are
-all reused verbatim from stage2_refactor. The only Stage 4-local logic is
-selecting the per-subset architecture (with or without GNN branch) and
-wiring up the CBAM1D attention flags.
-
-Per-subset architecture (locked by Stage 3 finalist decision):
-    FD001 -> AttnRecurrent (GRU,   no GNN)
-    FD002 -> AttnRecurrentGNN (BiGRU + GNN-physical)
-    FD003 -> AttnRecurrentGNN (GRU   + GNN-physical)
-    FD004 -> AttnRecurrentGNN (BiGRU + GNN-physical)
-
-Protocol (aligned with Stage 3 finalists):
-    sequence_length = 30
-    validation_enabled = True, fraction = 0.15, patience = 10
-    apply_median_filter_to_test = False
-    test eval: clamp y_pred & y_true to [0, initial_rul] before rmse_score
-"""
-
 from __future__ import annotations
 
 import argparse

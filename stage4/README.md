@@ -6,19 +6,6 @@ Add lightweight CBAM (Convolutional Block Attention Module) style attention on t
 
 The attention is deliberately small — a few hundred parameters — so it acts as an inductive-bias-preserving augmentation rather than a Transformer replacement.
 
-## Design Principles
-
-1. **No edits to teammate code.** Stage 4 lives entirely in `stage4/` and imports `stage2_refactor` and `stage3` as libraries.
-2. **Reuse Stage 2 data / training / evaluation paths verbatim.** Same `read_cmapss_table`, `fit_transform_train`, `build_train_val_loaders`, `fit`, `evaluate_test`.
-3. **Per-subset best architecture** (locked by Stage 3 finalist decision):
-
-| Subset | Baseline architecture (Stage 3 finalist) | Stage 3 RMSE | Stage 3 Score |
-|---|---|---:|---:|
-| FD001 | GRU (no GNN), h=90, L=2, d=0.2   |  6.165 |   55.72 |
-| FD002 | BiGRU + GNN (physical), h=60, L=2, d=0.1 | 13.705 | 1010.90 |
-| FD003 | GRU   + GNN (physical), h=90, L=2, d=0.2 |  5.181 |   45.28 |
-| FD004 | BiGRU + GNN (physical), h=60, L=2, d=0.1 | 15.900 | 1020.29 |
-
 ## CBAM Adapted to (B, T=30, F)
 
 We treat the input window as a 1-D sequence of `F` sensor channels and `T=30` time steps.
@@ -45,7 +32,7 @@ stage4/
 └── artifacts/                  # runs/, ablation/ (gitignored)
 ```
 
-## Protocol (aligned with Stage 3 finalists)
+## Protocol
 
 - `sequence_length = 30`
 - `validation_enabled = True`, engine-level 15% split, `patience = 10`
@@ -71,7 +58,7 @@ python -m stage4.ablation \
     --seeds 7,42,123
 ```
 
-## Ablation Matrix (Stage 4 cells only)
+## Ablation Matrix
 
 3 attention configurations × 4 subsets × 3 seeds = **36 runs**. Each cell is compared with its Stage 3 baseline.
 

@@ -1,21 +1,3 @@
-"""Stage 4 ablation matrix.
-
-For each subset, runs three attention configurations (channel-only,
-temporal-only, full CBAM) on top of the Stage 3 best-architecture baseline,
-across three seeds {7, 42, 123}. Then aggregates per-cell results into
-stage4/artifacts/ablation/results.csv with mean ± std of RMSE and Score.
-
-Baselines (no Stage 4 attention) are already in Stage 3 — we re-read them
-from stage3/docs/stage3_analysis.md when writing the final report, so we
-do not re-run them here.
-
-Usage
------
-    python -m stage4.ablation \
-        --subsets FD001,FD002,FD003,FD004 \
-        --seeds   7,42,123
-"""
-
 from __future__ import annotations
 
 import argparse

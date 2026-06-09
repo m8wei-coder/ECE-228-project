@@ -1,17 +1,3 @@
-"""AttnRecurrent: CBAM1D -> GRU/BiGRU -> regression head.
-
-This is the Stage 4 model used for subsets whose Stage 3 finalist is the
-pure recurrent backbone with no GNN branch (FD001 per
-`stage3/docs/stage3_analysis.md`).
-
-The recurrent block and regression head exactly mirror the Stage 2
-finalists (GRUBaseline / BiGRUBaseline). The only addition is a CBAM1D
-attention block applied to the (B, T, F) input window before it enters
-the recurrent layer. When both attention sub-modules are disabled, the
-model reduces to the corresponding Stage 2 finalist and serves as the
-ablation control.
-"""
-
 from __future__ import annotations
 
 import sys
@@ -29,17 +15,6 @@ from stage4.models.attention import CBAM1D
 
 
 class AttnRecurrent(BaseModel):
-    """CBAM-augmented recurrent regressor.
-
-    Args:
-        input_size: F, retained sensors.
-        recurrent_kind: "gru" or "bigru".
-        hidden_size, num_layers, dropout: recurrent backbone hyperparams.
-        use_channel_attn: enable the channel-attention sub-module of CBAM.
-        use_temporal_attn: enable the temporal-attention sub-module of CBAM.
-        attn_reduction: reduction ratio inside ChannelAttention.
-        attn_kernel: 1-D conv kernel inside TemporalAttention.
-    """
 
     def __init__(
         self,

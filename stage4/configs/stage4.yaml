@@ -1,12 +1,7 @@
-# Stage 4 config — CBAM-augmented Stage 3 finalist per subset.
-#
-# Per-subset backbone follows Stage 3 finalist decision:
-#   FD001 -> GRU,   no GNN     (Stage 3 said pure GRU wins on FD001)
+#   FD001 -> GRU,   no GNN
 #   FD002 -> BiGRU + GNN-physical
 #   FD003 -> GRU   + GNN-physical
 #   FD004 -> BiGRU + GNN-physical
-#
-# Stage 4 adds CBAM1D (channel + temporal attention) on the input window.
 
 project_name: ece228-cmapss-stage4
 
