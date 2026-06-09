@@ -25,11 +25,7 @@ stage3/
 │   ├── adj_{FD001..FD004}_{pearson,physical,union}.npy   # 12 precomputed graphs (~4 KB each, in repo)
 │   └── runs/ ...              # per-run summary.json / train_log.csv / checkpoints (gitignored)
 ├── docs/
-│   ├── recon_report.md        # Stage 1 reproduce/ recon
-│   ├── baseline_metrics.md    # our Stage 1 baseline numbers (RMSE/Score, initial_rul)
-│   ├── stage2_recon.md        # Stage 2 framework recon
-│   ├── fd001_results.md       # initial FD001 sanity check (3 seeds, local CPU)
-│   └── stage3_analysis.md     # FINAL Stage 3 ablation analysis + recommendations
+│   └── stage3_analysis.md     # final Stage 3 ablation analysis + recommendations
 ├── requirements.txt           # third-party deps (union of Stage 2 + Stage 3)
 └── README.md                  # this file
 ```
@@ -79,8 +75,8 @@ See `requirements.txt`. Two equivalent environments are used:
   with Colab.
 
 The repo is the source of truth for raw data: it expects
-`CMaps/{train,test,RUL}_FD00X.txt` at the repo root (committed by the
-Stage 2 owner).
+`CMaps/{train,test,RUL}_FD00X.txt` at the repo root (committed at the
+repo root).
 
 ## Run a single training
 
@@ -172,4 +168,4 @@ recommendation there is the pure GRU baseline.
   Stage 3 uses these so the final test numbers are computed with the
   same code as Stage 2.
 - No file under `stage2_refactor/` is modified by Stage 3.
-- Raw data lives at the repo root in `CMaps/` (added by the Stage 2 owner).
+- Raw data lives at the repo root in `CMaps/`.

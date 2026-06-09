@@ -55,6 +55,38 @@ def apply_median_filter(
     return df
 
 
+def fit_condition_scalers(
+    df: pd.DataFrame,
+    features: list[str],
+    n_clusters: int,
+) -> tuple[pd.DataFrame, dict[int, StandardScaler]]:
+    scalers: dict[int, StandardScaler] = {}
+    for condition in range(n_clusters):
+        idx = df["condition"] == condition
+        if idx.sum() == 0:
+            continue
+        scaler = StandardScaler()
+        df.loc[idx, features] = scaler.fit_transform(df.loc[idx, features])
+        scalers[condition] = scaler
+    return df, scalers
+
+
+def transform_condition_scalers(
+    df: pd.DataFrame,
+    features: list[str],
+    scalers: dict[int, StandardScaler],
+    n_clusters: int,
+) -> pd.DataFrame:
+    for condition in range(n_clusters):
+        idx = df["condition"] == condition
+        if idx.sum() == 0:
+            continue
+        if condition not in scalers:
+            raise KeyError(f"Scaler for condition {condition} not found in artifact.")
+        df.loc[idx, features] = scalers[condition].transform(df.loc[idx, features])
+    return df
+
+
 def fit_preprocessing(
     df: pd.DataFrame,
     params: PreprocessingParams,
@@ -72,16 +104,7 @@ def fit_preprocessing(
         n_init=params.kmeans_n_init,
     )
     df["condition"] = kmeans.fit_predict(df[SETTINGS_COLS])
-
-    scalers: dict[int, StandardScaler] = {}
-    for condition in range(params.kmeans_clusters):
-        idx = df["condition"] == condition
-        if idx.sum() == 0:
-            continue
-        scaler = StandardScaler()
-        df.loc[idx, features] = scaler.fit_transform(df.loc[idx, features])
-        scalers[condition] = scaler
-
+    df, scalers = fit_condition_scalers(df, features, params.kmeans_clusters)
     df.drop("condition", axis=1, inplace=True)
 
     artifact: dict[str, Any] = {
@@ -187,16 +210,12 @@ def transform_with_artifact(
 
     df[features] = df[features].astype(float)
     df["condition"] = artifact["kmeans"].predict(df[SETTINGS_COLS])
-
-    clusters = artifact.get("kmeans_clusters", 6)
-    for condition in range(clusters):
-        idx = df["condition"] == condition
-        if idx.sum() == 0:
-            continue
-        if condition not in artifact["scalers"]:
-            raise KeyError(f"Scaler for condition {condition} not found in artifact.")
-        df.loc[idx, features] = artifact["scalers"][condition].transform(df.loc[idx, features])
-
+    df = transform_condition_scalers(
+        df,
+        features,
+        artifact["scalers"],
+        artifact.get("kmeans_clusters", 6),
+    )
     df.drop("condition", axis=1, inplace=True)
     return df
 
@@ -214,4 +233,3 @@ def load_preprocessing_artifact(path: str | Path) -> dict[str, Any]:
     if missing:
         raise KeyError(f"Missing keys in preprocessing artifact {path}: {missing}")
     return artifact
-
